@@ -7,6 +7,7 @@
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
         <title>Schedule and Automate Your Social Media Posts with Mateauto</title>
+        <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico">
         <meta name="description" content="Our social media scheduling platform allows you to easily schedule and manage your posts across all your social media accounts in one place. Save time and grow your online presence with our intuitive platform.">
         <meta name="keywords" content="social media scheduling, social media management, social media platform, social media marketing, social media scheduling tool">
         <meta name="author" content="Mateauto">
@@ -90,15 +91,33 @@ Don't waste any more time manually posting to social media. Try our platform tod
 
                                     <div class="row">
                                         <div class="col-md-6 col-md-offset-3 col-sm-12 col-xs-12">
-                                            <div class="home-contact">
-                                                <div class="input-group">
-                                                    <input type="text" class="form-control" placeholder="Enter your email address">
-                                                    <input type="submit" class="form-control" value="Register here">
+                                            <form method="post" action="{{route('email.store')}}">
+                                                @csrf
+                                                <div class="home-contact">
+                                                    <div class="input-group">
+                                                        <input type="text" class="form-control" placeholder="Enter your email address" name="email">
+                                                        <input type="submit" class="form-control" value="Register here">
 
-                                                </div><!-- /input-group -->
+                                                    </div><!-- /input-group -->
+                                                    @if ($errors->any())
+                                                        <div class="alert alert-danger">
+                                                            <ul>
+                                                                @foreach ($errors->all() as $error)
+                                                                    <li>{{ $error }}</li>
+                                                                @endforeach
+                                                            </ul>
+                                                        </div>
+                                                    @endif
 
+                                                    @if(session()->has('status'))
+                                                        <div class="alert alert-success">
+                                                            {{ session()->get('status') }}
+                                                        </div>
+                                                    @endif
 
-                                            </div>
+                                                </div>
+                                            </form>
+                                            
                                         </div>
                                     </div>
 
@@ -147,7 +166,7 @@ Don't waste any more time manually posting to social media. Try our platform tod
 
 
                         <div class="col-sm-6 margin-top-60">
-                            <div class="single_features_right ">
+                            <div class="single_features_right">
                                 <h2>Customize Bookmarks</h2>
                                 <p>Bookmarks or saved items for users are the most important. Users bookmark the tweets, post for later use but their is high possibility that the bookmarks or saved items are not browsed by the user again. Don't worry our tool will help you to keep you upto date with your saved items and make sure you don't miss them.</p>
                                 <ul>
@@ -189,7 +208,7 @@ Don't waste any more time manually posting to social media. Try our platform tod
 
                         <div class="col-md-3 col-sm-6 col-xs-12">
                             <div class="community-edition">
-                                <i class="fa fa-circle"></i>
+                                <i class="fa fa-calendar"></i>
                                 <div class="separator"></div>
                                 <h4>Schedule Content</h4>
                                 <p>You can schedule your content based on the calendar. You can also update and delete the content before it is posted on to the social media platform. More manageable UI for users.</p>
