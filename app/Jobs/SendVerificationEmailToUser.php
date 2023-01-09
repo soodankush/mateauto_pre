@@ -33,5 +33,6 @@ class SendVerificationEmailToUser implements ShouldQueue
     public function handle()
     {
         Mail::to('aks21117@gmail.com')->send(new VerifyEmail());
+        return true;
     }
 }
