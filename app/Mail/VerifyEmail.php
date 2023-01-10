@@ -31,7 +31,7 @@ class VerifyEmail extends Mailable
     public function envelope()
     {
         return new Envelope(
-            subject: 'Test Email',
+            subject: 'Welcome to Mateauto.io. The social media content scheduling platform for users.',
         );
     }
 
