@@ -15,11 +15,11 @@ class EmailController extends Controller
     public function storeEmail(EmailRequest $request) 
     {
         $validateEmail = $request->validated();
-        $newUser = PreLaunchEmail::create([
-            'email' => $request->email,
-            'is_verified' => false,
-            'token' => md5(rand())
-        ]);
+        // $newUser = PreLaunchEmail::create([
+        //     'email' => $request->email,
+        //     'is_verified' => false,
+        //     'token' => md5(rand())
+        // ]);
         SendVerificationEmailToUser::dispatch();
         return redirect()->back()->with(['status' => 'Email registered. Please verify it.']);
     }

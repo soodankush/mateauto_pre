@@ -33,6 +33,7 @@ class SendVerificationEmailToUser implements ShouldQueue
     public function handle()
     {
         try{
+            \Log::info('Dispatching email to user');
             Mail::to('aks21117@gmail.com')->send(new VerifyEmail());
             return true;
         } catch(\Exception $e) {
