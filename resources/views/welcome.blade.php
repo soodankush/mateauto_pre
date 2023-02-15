@@ -97,7 +97,8 @@ Don't waste any more time manually posting to social media. Try our platform tod
                                                 @csrf
                                                 <div class="home-contact">
                                                     <div class="input-group">
-                                                        <input type="text" class="form-control" placeholder="Enter your email address" name="email">
+                                                        <input type="text" class="form-control" placeholder="Enter your full name" name="name">
+                                                        <input type="email" class="form-control" placeholder="Enter your email address" name="email">
                                                         <input type="submit" class="form-control" value="Register here">
 
                                                     </div><!-- /input-group -->

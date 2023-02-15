@@ -24,6 +24,7 @@ class EmailRequest extends FormRequest
     public function rules()
     {
         return [
+            'name'  => 'required|min:5|string',
             'email' => 'required|email|unique:pre_launch_emails|min:5'
         ];
     }

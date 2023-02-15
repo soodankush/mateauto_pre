@@ -10,19 +10,21 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Mail;
 use App\Mail\VerifyEmail;
+use App\Models\PreLaunchEmail;
 
 class SendVerificationEmailToUser implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    private $user;
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct()
+    public function __construct($userId)
     {
-        //
+        $this->user = PreLaunchEmail::where('id',$userId)->first();
     }
 
     /**
@@ -32,12 +34,13 @@ class SendVerificationEmailToUser implements ShouldQueue
      */
     public function handle()
     {
+        \Log::info('Inside ' .  __METHOD__);
         try{
-            \Log::info('Dispatching email to user');
-            Mail::to('aks21117@gmail.com')->send(new VerifyEmail());
+            Mail::to($this->user['email'])->send(new VerifyEmail($this->user));
             return true;
         } catch(\Exception $e) {
             \Log::info($e);
+            return false;
         }
         
     }

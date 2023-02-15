@@ -13,14 +13,15 @@ class VerifyEmail extends Mailable
 {
     use Queueable, SerializesModels;
 
+    public $userData;
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct()
+    public function __construct($userData)
     {
-        //
+        $this->userData = $userData;
     }
 
     /**

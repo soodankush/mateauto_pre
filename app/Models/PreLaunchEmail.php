@@ -10,6 +10,7 @@ class PreLaunchEmail extends Model
     use HasFactory;
 
     protected $fillable = [
+        'name',
         'email',
         'is_verified',
         'email_verified_at',

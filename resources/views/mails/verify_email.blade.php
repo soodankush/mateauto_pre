@@ -358,7 +358,7 @@
                                     <td>
                                         <div class="text" style="padding: 0 2.5em; text-align: center;">
                                             <h2>Welcome to MateAuto.io</h2>
-											<p>Dear [Name],</p>
+											<p>Dear {{$userData->name}},</p>
 											<p>Thank you for signing up for our social media content scheduling tool!</p>
 											<p>To verify your email address and complete the sign-up process, please click on the following link:</p>
                                             <p><a href="#" class="btn btn-primary">Yes! I want to join the waitlist!!!</a></p>
