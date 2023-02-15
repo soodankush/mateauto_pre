@@ -361,7 +361,7 @@
 											<p>Dear {{$userData->name}},</p>
 											<p>Thank you for signing up for our social media content scheduling tool!</p>
 											<p>To verify your email address and complete the sign-up process, please click on the following link:</p>
-                                            <p><a href="#" class="btn btn-primary">Yes! I want to join the waitlist!!!</a></p>
+                                            <p><a href='{{url("/verify_email/{$userData->token}")}}' class="btn btn-primary">Yes! I want to join the waitlist!!!</a></p>
                                         </div>
                                     </td>
                                 </tr>

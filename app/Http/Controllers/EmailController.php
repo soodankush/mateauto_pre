@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Http\Requests\EmailRequest;
 use App\Models\PreLaunchEmail;
 use App\Jobs\SendVerificationEmailToUser;
+use Carbon\Carbon;
+use Str;
 
 class EmailController extends Controller
 {
@@ -19,9 +21,31 @@ class EmailController extends Controller
             'name'  => $request->name,
             'email' => $request->email,
             'is_verified' => false,
-            'token' => md5(rand())
+            'token' => Str::random(210)
         ]);
         SendVerificationEmailToUser::dispatch($newUser->id);
         return redirect()->back()->with(['status' => 'Email registered. Please verify it.']);
+    }
+
+    /**
+     * Function verify the pre launch emails
+     */
+    public function verifyPrelaunchEmail($token)
+    {
+        $getUserData = PreLaunchEmail::where('token', $token)
+                        ->first();
+
+        if(!$getUserData) {
+            return redirect()->to('/')->with('error', 'Invalid User');
+        }
+
+        if($getUserData->is_verified) {
+            return redirect()->to('/')->with('success', 'User has been already registered to the waitlist');
+        }
+
+        $getUserData->is_verified = 1;
+        $getUserData->email_verified_at = Carbon::now();
+        $getUserData->update();
+        return redirect()->to('/')->with('success', 'User successfully registered to waitlist');
     }
 }
