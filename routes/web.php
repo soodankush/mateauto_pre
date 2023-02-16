@@ -12,9 +12,13 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
+Route::get('/old', function () {
+    return view('welcome_old');
 })->name('home');
+
+Route::get('/', function(){
+    return view('welcome');
+});
 
 Route::post('store-email', 'App\Http\Controllers\EmailController@storeEmail')->name('email.store');
 

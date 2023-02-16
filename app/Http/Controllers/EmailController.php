@@ -24,7 +24,7 @@ class EmailController extends Controller
             'token' => Str::random(210)
         ]);
         SendVerificationEmailToUser::dispatch($newUser->id);
-        return redirect()->back()->with(['status' => 'Email registered. Please verify it.']);
+        return redirect()->back()->with(['success' => 'Email successsfully registered. Please verify it.']);
     }
 
     /**
