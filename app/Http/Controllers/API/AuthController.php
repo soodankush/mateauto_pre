@@ -82,4 +82,12 @@ class AuthController extends Controller
             'token' => $user->createToken("MyApp")->plainTextToken
         ], 200);
     }
+
+    public function getLogin()
+    {
+        return [
+            'success' => false,
+            'message' => 'Invalid session'
+        ];
+    }
 }

@@ -23,3 +23,7 @@ Route::get('/', function(){
 Route::post('store-email', 'App\Http\Controllers\EmailController@storeEmail')->name('email.store');
 
 Route::get('verify_email/{token}', 'App\Http\Controllers\EmailController@verifyPrelaunchEmail')->name('prelaunch.email.verify');
+
+Route::get('callback/{platform}', function() {
+    dd("here");
+})->name('redirect.url');
