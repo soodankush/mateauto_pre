@@ -14,7 +14,7 @@ class EmailController extends Controller
     /**
      * Function that stores the email to the database and trigger verify email job
      */
-    public function storeEmail(EmailRequest $request) 
+    public function storeEmail(EmailRequest $request)
     {
         $validateEmail = $request->validated();
         $newUser = PreLaunchEmail::create([
@@ -35,11 +35,11 @@ class EmailController extends Controller
         $getUserData = PreLaunchEmail::where('token', $token)
                         ->first();
 
-        if(!$getUserData) {
+        if (!$getUserData) {
             return redirect()->to('/')->with('error', 'Invalid User');
         }
 
-        if($getUserData->is_verified) {
+        if ($getUserData->is_verified) {
             return redirect()->to('/')->with('success', 'User has been already registered to the waitlist');
         }
 

@@ -7,8 +7,9 @@ class Platforms
     /**
      * Currently available platforms
      */
-    CONST AVL_PLATFORMS = [
+    public const AVL_PLATFORMS = [
         "TWITTER",
+        "GUMROAD",
         "INSTAGRAM",
         "LINKEDIN",
     ];
