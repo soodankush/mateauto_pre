@@ -10,7 +10,8 @@ use Hash;
 
 class AuthController extends Controller
 {
-    public function register(Request $request) {
+    public function register(Request $request)
+    {
         $validator = Validator::make($request->all(), [
             'name'  => 'required|min:5|string',
             'email' => 'required|email|unique:users|min:5',
@@ -18,7 +19,7 @@ class AuthController extends Controller
             'confirm_password' => 'required|same:password',
         ]);
 
-        if($validator->fails()) {
+        if ($validator->fails()) {
             $response = [
                 'success' => false,
                 'message' => $validator->errors()
@@ -42,14 +43,14 @@ class AuthController extends Controller
         return response()->json($response, 200);
     }
 
-    public function login(Request $request) 
+    public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'email' => 'required',
             'password' => 'required'
         ]);
 
-        if($validator->fails()) {
+        if ($validator->fails()) {
             $response = [
                 'success' => false,
                 'message' => $validator->errors()
@@ -59,7 +60,7 @@ class AuthController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        if(!$user) {
+        if (!$user) {
             $response = [
                 'success' => false,
                 'message' => 'Invalid credentials'
@@ -67,13 +68,12 @@ class AuthController extends Controller
             return response()->json($response, 400);
         }
 
-        if(!Hash::check($request->password, $user->password))
-        {
+        if (!Hash::check($request->password, $user->password)) {
             $response = [
                 'success' => false,
                 'message' => 'Invalid credentials'
             ];
-            return response()->json($response, 400);   
+            return response()->json($response, 400);
         }
 
         return response()->json([
@@ -88,6 +88,16 @@ class AuthController extends Controller
         return [
             'success' => false,
             'message' => 'Invalid session'
+        ];
+    }
+
+    public function userLogout()
+    {
+        $user = auth()->user();
+        $user->tokens()->delete();
+        return [
+            'success' => 'true',
+            'message' => 'User successfully logged out',
         ];
     }
 }

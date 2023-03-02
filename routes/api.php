@@ -18,6 +18,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+Route::middleware('auth:sanctum')->get('/user/logout', 'App\Http\Controllers\API\AuthController@userLogout')->name('user.logout');
+
 Route::get('/login', 'App\Http\Controllers\API\AuthController@getLogin')->name('login');
 Route::post('/register', 'App\Http\Controllers\API\AuthController@register');
 Route::post('/login', 'App\Http\Controllers\API\AuthController@login');
