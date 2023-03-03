@@ -21,7 +21,7 @@ Route::get('/', function(){
 });
 
 Route::get('/login', function(){
-    return redirect()->to('app.' . Request::getHttpHost() . '/login');
+    return Redirect::to('https://app.' . $_SERVER['SERVER_NAME'] . '/');
 })->name('user.login');
 
 Route::post('store-email', 'App\Http\Controllers\EmailController@storeEmail')->name('email.store');
