@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+
+// use App\Http\Controllers;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -16,11 +18,11 @@ Route::get('/old', function () {
     return view('welcome_old');
 })->name('home');
 
-Route::get('/', function(){
+Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/login', function(){
+Route::get('/login', function () {
     return Redirect::to('https://app.' . $_SERVER['SERVER_NAME'] . '/');
 })->name('user.login');
 

@@ -3,6 +3,9 @@
 namespace App\Services;
 
 use GuzzleHttp\Client;
+use App\Models\UserSettings;
+use App\Models\Platform;
+use Carbon\Carbon;
 
 class TwitterApiService
 {
@@ -14,28 +17,79 @@ class TwitterApiService
     private $redirectUrl = 'callback/twitter';
     private $accessToken = null;
     private $headers = null;
+    private $platformId = 1;
+    private $scope = [
+        'tweet.read',
+        'users.read',
+        'offline.access',
+        'tweet.write',
+        'follows.read',
+        'follows.write',
+        'like.read',
+        'like.write',
+        'bookmark.read',
+        'bookmark.write'
+    ];
     public function __construct()
     {
         $this->headers = [ 'Authorization' => 'Bearer ' . $this->accessToken];
     }
 
-    public function getLoginUrl()
+    public function getLoginUrl($userSettingsData)
     {
         \Log::info('Inside ' . __METHOD__);
-        $url = $this->platformUrl . '/i/oauth2/authorize?response_type=code&client_id=' . config('twitter.client_id') . '&redirect_uri=' . config('app.url') . $this->redirectUrl . '&scope=tweet.read%20users.read%20offline.access&state=state&code_challenge=challenge&code_challenge_method=plain';
-        return $url;
+        try {
+            $payloadData = $this->_getPayloadData($userSettingsData);
+            $url = $this->platformUrl . '/i/oauth2/authorize?response_type=code&client_id=' . config('twitter.client_id') . '&redirect_uri=' . config('app.url') . $this->redirectUrl . '&scope=' . urlencode(implode(" ", $this->scope)) . '&state=' . $payloadData['state'] . '&code_challenge=' . $payloadData['code_challenge']. '&code_challenge_method=' . $payloadData['code_challenge_method'];
+            return $url;
+        } catch(\Exception $e) {
+            \Log::error($e);
+            return null;
+        }
+    }
+
+    private function _getPayloadData(UserSettings $userSettings = null)
+    {
+        if (isset($userSettings->payload)) {
+            $payload = json_decode($userSettings->payload, true);
+        } else {
+            $permittedCharacters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            $payload['state'] = substr(str_shuffle($permittedCharacters), 0, 16);
+            $payload['code_challenge'] = substr(str_shuffle($permittedCharacters), 0, 20);
+            $payload['code_challenge_method'] = 'plain';
+            UserSettings::updateOrInsert([
+                'user_id'   => auth()->user()->id,
+                'platform_id'=> $this->platformId,
+                'status'   => 0,
+            ], [
+                'payload' => json_encode($payload),
+                'created_at'=> Carbon::now(),
+                'updated_at' => Carbon::now()
+            ]);
+        }
+
+        return $payload;
     }
 
     public function getRefreshAndAccessTokenUsingCode($userData)
     {
         \Log::info('Inside ' . __METHOD__);
+        $currentUserSettingsData = UserSettings::where('payload->state', $userData['state'])->first();
+
+        if (!$currentUserSettingsData) {
+            \Log::error('User settings detail for the ' . $userData['state'] . ' not found.');
+            throw new \Exception('User settings details not found.');
+        }
+
+        $payloadData = $this->_getPayloadData($currentUserSettingsData);
         $client = new Client();
         $formData = [
             'code' => $userData['code'],
             'grant_type' => 'authorization_code',
             'client_id' => config('twitter.client_id'),
             'redirect_uri' => url('/callback/twitter'),
-            'code_verifier' => 'challenge'
+            // 'code_verifier' => 'challenge'
+            'code_verifier'     => $payloadData['code_challenge']
         ];
         $tokenResponse = $client->post($this->refreshAndAccessTokenGenerationUrl, [
             'form_params' => $formData
@@ -43,8 +97,22 @@ class TwitterApiService
 
         if ($tokenResponse->getStatusCode() === 200) {
             $bodyContent = $tokenResponse->getBody()->getContents();
+
+            $currentUserSettingsData->update([
+                'credentials'   => $bodyContent,
+                'status'        => true,
+                'updated_at'    => Carbon::now()
+            ]);
+
+            // $userPlatformSettings = UserSettings::update([
+            //     'user_id'       => 1,
+            //     'platform_id'   => $this->platformId,
+            //     'credentials'   => $bodyContent,
+            //     'status'        => true,
+            //     'created_at'    => Carbon::now(),
+            //     'updated_at'    => Carbon::now()
+            // ]);
             $tokenData = json_decode($bodyContent, true);
-            \Log::info($tokenData);
             //save the token data
             return $tokenData;
         } else {

@@ -31,6 +31,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('pre_launch_emails');
+        // Schema::dropIfExists('pre_launch_emails');
     }
 };
