@@ -24,3 +24,7 @@ Route::get('/login', 'App\Http\Controllers\API\AuthController@getLogin')->name('
 Route::post('/register', 'App\Http\Controllers\API\AuthController@register');
 Route::post('/login', 'App\Http\Controllers\API\AuthController@login');
 Route::get('/{platform}/user/login', 'App\Http\Controllers\API\PlatformController@getLoginUrl')->middleware('auth:sanctum');
+
+Route::get('/twitter/bookmarks', 'App\Http\Controllers\API\Platform\TwitterController@getBookmarks')->middleware('auth:sanctum');
+Route::get('/twitter/tweets', 'App\Http\Controllers\API\Platform\TwitterController@getTweets')->middleware('auth:sanctum');
+Route::get('/twitter/profile', 'App\Http\Controllers\API\Platform\TwitterController@getMyProfile')->middleware('auth:sanctum');

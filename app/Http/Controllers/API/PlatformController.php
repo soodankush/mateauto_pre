@@ -8,6 +8,7 @@ use App\Services\TwitterApiService;
 use App\Services\GumroadApiService;
 use App\Models\UserSettings;
 use App\Models\Platform;
+use App\Http\Controllers\API\Platform\TwitterController;
 
 class PlatformController extends Controller
 {
@@ -108,7 +109,13 @@ class PlatformController extends Controller
                     if (!$request->has('code') || !$request->has('state')) {
                         throw new \Exception('Invalid callback request');
                     }
-                    $accessTokenData = $this->twitterApiService->getRefreshAndAccessTokenUsingCode($request->all());
+                    $accessTokenWasFetched = $this->twitterApiService->getRefreshAndAccessTokenUsingCode($request->all());
+
+                    if($accessTokenWasFetched) {
+                        $callTwitterUserApi = new TwitterController();
+                        $callTwitterUserApi->getMyProfile();
+                        \Log::info('Profile Data fetched');
+                    }
                     break;
 
                 case 'gumroad':

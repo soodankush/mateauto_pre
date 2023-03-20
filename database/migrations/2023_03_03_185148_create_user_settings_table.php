@@ -20,6 +20,7 @@ return new class extends Migration
             $table->json('credentials')->nullable();
             $table->boolean('status');
             $table->json('payload')->comments('Payload which is sent during OAuth')->nullable();
+            $table->json('platform_user_details')->comments('User details related to platform')->nullable();
             $table->foreign('user_id')->references('id')->on('users');
             $table->foreign('platform_id')->references('id')->on('platforms');
             $table->timestamps();

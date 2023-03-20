@@ -14,6 +14,7 @@ class UserSettings extends Model
         'platform_id',
         'credentials',
         'status',
-        'payload'
+        'payload',
+        'platform_user_details'
     ];
 }

@@ -32,20 +32,14 @@ class TwitterApiService
     ];
     public function __construct()
     {
-        $this->headers = [ 'Authorization' => 'Bearer ' . $this->accessToken];
+        // $this->headers = [ 'Authorization' => 'Bearer ' . $this->accessToken];
     }
 
-    public function getLoginUrl($userSettingsData)
+    private function _setHeaders(UserSettings $userSettings)
     {
-        \Log::info('Inside ' . __METHOD__);
-        try {
-            $payloadData = $this->_getPayloadData($userSettingsData);
-            $url = $this->platformUrl . '/i/oauth2/authorize?response_type=code&client_id=' . config('twitter.client_id') . '&redirect_uri=' . config('app.url') . $this->redirectUrl . '&scope=' . urlencode(implode(" ", $this->scope)) . '&state=' . $payloadData['state'] . '&code_challenge=' . $payloadData['code_challenge']. '&code_challenge_method=' . $payloadData['code_challenge_method'];
-            return $url;
-        } catch(\Exception $e) {
-            \Log::error($e);
-            return null;
-        }
+        $credentails = json_decode($userSettings->credentials, true);
+        $this->accessToken = $credentails['access_token'];
+        $this->headers = [ 'Authorization' => 'Bearer ' . $this->accessToken];
     }
 
     private function _getPayloadData(UserSettings $userSettings = null)
@@ -71,6 +65,19 @@ class TwitterApiService
         return $payload;
     }
 
+    public function getLoginUrl($userSettingsData)
+    {
+        \Log::info('Inside ' . __METHOD__);
+        try {
+            $payloadData = $this->_getPayloadData($userSettingsData);
+            $url = $this->platformUrl . '/i/oauth2/authorize?response_type=code&client_id=' . config('twitter.client_id') . '&redirect_uri=' . config('app.url') . $this->redirectUrl . '&scope=' . urlencode(implode(" ", $this->scope)) . '&state=' . $payloadData['state'] . '&code_challenge=' . $payloadData['code_challenge']. '&code_challenge_method=' . $payloadData['code_challenge_method'];
+            return $url;
+        } catch(\Exception $e) {
+            \Log::error($e);
+            return null;
+        }
+    }
+
     public function getRefreshAndAccessTokenUsingCode($userData)
     {
         \Log::info('Inside ' . __METHOD__);
@@ -88,7 +95,6 @@ class TwitterApiService
             'grant_type' => 'authorization_code',
             'client_id' => config('twitter.client_id'),
             'redirect_uri' => url('/callback/twitter'),
-            // 'code_verifier' => 'challenge'
             'code_verifier'     => $payloadData['code_challenge']
         ];
         $tokenResponse = $client->post($this->refreshAndAccessTokenGenerationUrl, [
@@ -104,17 +110,7 @@ class TwitterApiService
                 'updated_at'    => Carbon::now()
             ]);
 
-            // $userPlatformSettings = UserSettings::update([
-            //     'user_id'       => 1,
-            //     'platform_id'   => $this->platformId,
-            //     'credentials'   => $bodyContent,
-            //     'status'        => true,
-            //     'created_at'    => Carbon::now(),
-            //     'updated_at'    => Carbon::now()
-            // ]);
-            $tokenData = json_decode($bodyContent, true);
-            //save the token data
-            return $tokenData;
+            return true;
         } else {
             \Log::error('Token response code ' . $tokenResponse->getStatusCode());
             \Log::error('Token response body ' . $tokenResponse->getBody()->getContents());
@@ -122,55 +118,112 @@ class TwitterApiService
         }
     }
 
-    public function generateNewAccessToken()
+    private function _generateNewAccessToken(UserSettings $settingsData)
     {
         \Log::info('Inside ' . __METHOD__);
+        try {
+            $credentials = json_decode($settingsData->credentials, true);
+            $client = new Client();
+            $formData = [
+                'refresh_token' => $credentials['refresh_token'],
+                'grant_type' =>'refresh_token',
+                'client_id' => config('twitter.client_id'),
+            ];
+            // dd($formData);
+            $newAccessTokenResponse = $client->post($this->refreshAndAccessTokenGenerationUrl, [
+                'form_params' => $formData
+            ]);
+            if ($newAccessTokenResponse->getStatusCode() === 200) {
+                $settingsData->update([
+                    'credentials' => $newAccessTokenResponse->getBody()->getContents(),
+                    'updated_at'    => Carbon::now()
+                ]);
+            }
+            return true;
+        } catch(\Exception $e) {
+            \Log::error($e);
+            return false;
+        }
     }
 
-    public function apiRequest($endpoint, $requestType = 'GET', $requestBody = null, $params = [])
+    private function _apiRequest($endpoint, $requestType = 'GET', $requestBody = null, $params = [])
     {
+        \Log::info('Inside ' . __METHOD__);
         $responseData = null;
         $url = $this->baseApiUrl . '/';
-        if ($apiVersion) {
+        if ($this->apiVersion) {
             $url .= $this->apiVersion . '/';
         }
         $url .= $endpoint;
         if (count($params) > 0) {
             $url .= '?' . $params;
         }
-        $client = new Client();
-        switch ($requestType) {
-            case 'GET':
-                $responseData = $client->get($url, [
-                    'headers' => $this->headers,
-                ]);
-                break;
+        try {
+            $client = new Client();
+            switch ($requestType) {
+                case 'GET':
+                    $responseData = $client->get($url, [
+                        'headers' => $this->headers,
+                    ]);
+                    break;
 
-            case 'POST':
-                $responseData = $client->post($url, [
-                    'headers' => $this->headers,
-                    'body'=>$requestBody
-                ]);
-                break;
+                case 'POST':
+                    $responseData = $client->post($url, [
+                        'headers' => $this->headers,
+                        'body'=>$requestBody
+                    ]);
+                    break;
 
-            case 'PUT':
-                $responseData = $client->put($url, [
-                    'headers' => $this->headers,
-                    'body'=>$requestBody
-                ]);
-                break;
+                case 'PUT':
+                    $responseData = $client->put($url, [
+                        'headers' => $this->headers,
+                        'body'=>$requestBody
+                    ]);
+                    break;
 
-            case 'DELETE':
-                $responseData = $client->delete($url, [
-                    'headers' => $this->headers,
-                    'body'=>$requestBody
-                ]);
-                break;
+                case 'DELETE':
+                    $responseData = $client->delete($url, [
+                        'headers' => $this->headers,
+                        'body'=>$requestBody
+                    ]);
+                    break;
 
-            default:
-                # code...
-                break;
+                default:
+                    # code...
+                    break;
+            }
+            return [
+                'response' => json_decode($responseData->getBody()->getContents()),
+                'statusCode' => $responseData->getStatusCode()
+            ];
+        } catch (\GuzzleHttp\Exception\ClientException $e) {
+            return [
+                'response' => json_decode($e->getResponse()->getBody()->getContents(), true),
+                'statusCode' => $e->getResponse()->getStatusCode()
+            ];
+            return $e->getResponse();
         }
-        dd($responseData->getBody()->getContents());
+    }
+
+    public function callApiService(UserSettings $platformUserSettings, $endpoint, $requestType, $body = null, $urlParams = [])
+    {
+        \Log::info('Inside ' . __METHOD__);
+        $this->_setHeaders($platformUserSettings);
+        if (!isset($this->accessToken) || ($this->accessToken === null)) {
+            \Log::error('Unable to fetch access token for user id: ' . $platformUserSettings->user_id);
+        }
+        $apiResponse = $this->_apiRequest($endpoint, $requestType, $body, $urlParams);
+
+        if ($apiResponse['statusCode'] === 401) {
+            $isNewTokenGenerated = $this->_generateNewAccessToken($platformUserSettings);
+            if($isNewTokenGenerated) {
+                $this->callApiService($platformUserSettings, $endpoint, $requestType, $body, $urlParams);
+            } else {
+                \Log::error(' Some issue with the token generattion');
+                //call the getRefreshAndAccessTokenUsingCode again to get new tokens
+                throw new \Exception('Could not generate a new access token');
+            }
+        }
+        return $apiResponse;
     }
 }
